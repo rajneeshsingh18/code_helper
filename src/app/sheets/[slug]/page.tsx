@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,9 +38,27 @@ export default async function SheetDetailPage({
     notFound();
   }
 
+  const session = await getServerSession(authOptions);
   const userProgress: Record<string, string> = {};
-  const solvedCount = 0;
-  const progressPercent = 0;
+  let solvedCount = 0;
+
+  if (session?.user?.id) {
+    const progress = await db.userProgress.findMany({
+      where: { 
+        userId: session.user.id,
+        problemId: { in: sheet.problems.map(p => p.problem.id) }
+      },
+      select: { problemId: true, status: true },
+    });
+    progress.forEach((p) => {
+      userProgress[p.problemId] = p.status;
+      if (p.status === "Solved") solvedCount++;
+    });
+  }
+
+  const progressPercent = sheet.problems.length > 0 
+    ? Math.round((solvedCount / sheet.problems.length) * 100) 
+    : 0;
 
   return (
     <div className="container py-8">

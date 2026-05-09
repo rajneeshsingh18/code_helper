@@ -1,12 +1,16 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn, getDifficultyColor } from "@/lib/utils";
-import { ChevronLeft, PlayCircle, Bookmark, CheckCircle2, Clock } from "lucide-react";
+import { ChevronLeft, PlayCircle, Bookmark, CheckCircle2 } from "lucide-react";
+import { CodeEditor } from "@/components/problems/code-editor";
+import { ProblemActions } from "@/components/problems/problem-actions";
 
 export default async function ProblemPage({
   params,
@@ -26,17 +30,33 @@ export default async function ProblemPage({
     notFound();
   }
 
-  const userProgress: any = null;
-  const userNote: any = null;
-  const isBookmarked = false;
+  const session = await getServerSession(authOptions);
+  
+  let userProgress = null;
+  let userNote = null;
+  let isBookmarked = false;
+
+  if (session?.user?.id) {
+    [userProgress, userNote, isBookmarked] = await Promise.all([
+      db.userProgress.findUnique({
+        where: { userId_problemId: { userId: session.user.id, problemId: problem.id } },
+      }),
+      db.userNote.findUnique({
+        where: { userId_problemId: { userId: session.user.id, problemId: problem.id } },
+      }),
+      db.bookmark.findUnique({
+        where: { userId_problemId: { userId: session.user.id, problemId: problem.id } },
+      }).then(b => !!b),
+    ]);
+  }
 
   const examples = problem.examples ? JSON.parse(problem.examples) : [];
   const constraints = problem.constraints ? JSON.parse(problem.constraints) : [];
   const testCases = problem.testCases ? JSON.parse(problem.testCases) : [];
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="border-b">
+    <div className="min-h-screen bg-background flex flex-col">
+      <div className="border-b bg-card">
         <div className="container py-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" asChild>
@@ -54,7 +74,7 @@ export default async function ProblemPage({
               </div>
               <div className="flex flex-wrap gap-2 mt-2">
                 {problem.topics.map((topic) => (
-                  <Badge key={topic.id} variant="outline">
+                  <Badge key={topic.id} variant="outline" className="text-[10px] h-5">
                     {topic.name}
                   </Badge>
                 ))}
@@ -62,13 +82,13 @@ export default async function ProblemPage({
             </div>
             <div className="flex gap-2">
               {userProgress?.status === "Solved" && (
-                <Badge variant="outline" className="bg-green-500/10 text-green-500">
+                <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
                   <CheckCircle2 className="h-3 w-3 mr-1" />
                   Solved
                 </Badge>
               )}
               {problem.videoUrl && (
-                <Button variant="outline" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="h-9">
                   <a href={problem.videoUrl} target="_blank" rel="noopener noreferrer">
                     <PlayCircle className="h-4 w-4 mr-2" />
                     Video Solution
@@ -80,159 +100,143 @@ export default async function ProblemPage({
         </div>
       </div>
 
-      <div className="container py-6">
-        <div className="grid lg:grid-cols-2 gap-6">
-          <div className="space-y-6">
-            <Tabs defaultValue="description">
-              <TabsList>
-                <TabsTrigger value="description">Description</TabsTrigger>
-                <TabsTrigger value="examples">Examples</TabsTrigger>
-                <TabsTrigger value="constraints">Constraints</TabsTrigger>
-                <TabsTrigger value="testcases">Test Cases</TabsTrigger>
-              </TabsList>
-              <TabsContent value="description" className="mt-4">
-                <Card>
-                  <CardContent className="pt-6 prose prose-sm dark:prose-invert max-w-none">
-                    <div dangerouslySetInnerHTML={{ __html: problem.description }} />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="examples" className="mt-4">
-                <Card>
-                  <CardContent className="pt-6 space-y-4">
-                    {examples.length > 0 ? (
-                      examples.map((ex: any, i: number) => (
-                        <div key={i} className="space-y-2">
-                          <p className="font-medium">Example {i + 1}:</p>
-                          <div className="bg-muted p-4 rounded-lg font-mono text-sm">
-                            <p>
-                              <span className="text-muted-foreground">Input: </span>
-                              {ex.input}
-                            </p>
-                            <p>
-                              <span className="text-muted-foreground">Output: </span>
-                              {ex.output}
-                            </p>
-                            {ex.explanation && (
-                              <p className="mt-2">
-                                <span className="text-muted-foreground">Explanation: </span>
-                                {ex.explanation}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-muted-foreground">No examples available</p>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="constraints" className="mt-4">
-                <Card>
-                  <CardContent className="pt-6">
-                    <ul className="list-disc list-inside space-y-2">
-                      {constraints.map((c: string, i: number) => (
-                        <li key={i} className="font-mono text-sm">
-                          {c}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="testcases" className="mt-4">
-                <Card>
-                  <CardContent className="pt-6 space-y-4">
-                    {testCases.length > 0 ? (
-                      testCases.map((tc: any, i: number) => (
-                        <div key={i} className="bg-muted p-4 rounded-lg font-mono text-sm">
+      <div className="flex-1 container py-6 grid lg:grid-cols-2 gap-6 overflow-hidden">
+        <div className="flex flex-col gap-6 overflow-auto pr-2">
+          <Tabs defaultValue="description" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="description">Description</TabsTrigger>
+              <TabsTrigger value="examples">Examples</TabsTrigger>
+              <TabsTrigger value="constraints">Constraints</TabsTrigger>
+              <TabsTrigger value="testcases">Test Cases</TabsTrigger>
+            </TabsList>
+            <TabsContent value="description" className="mt-4 focus-visible:outline-none">
+              <Card>
+                <CardContent className="pt-6 prose prose-sm dark:prose-invert max-w-none">
+                  <div 
+                    className="space-y-4"
+                    dangerouslySetInnerHTML={{ __html: problem.description }} 
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="examples" className="mt-4 focus-visible:outline-none">
+              <Card>
+                <CardContent className="pt-6 space-y-6">
+                  {examples.length > 0 ? (
+                    examples.map((ex: any, i: number) => (
+                      <div key={i} className="space-y-2">
+                        <p className="font-semibold text-sm">Example {i + 1}:</p>
+                        <div className="bg-muted p-4 rounded-lg font-mono text-sm border">
                           <p>
-                            <span className="text-muted-foreground">Case {i + 1}:</span>
-                          </p>
-                          <p className="mt-1">
                             <span className="text-muted-foreground">Input: </span>
-                            {JSON.stringify(tc.input)}
+                            {ex.input}
                           </p>
                           <p>
                             <span className="text-muted-foreground">Output: </span>
-                            {JSON.stringify(tc.expected)}
+                            {ex.output}
                           </p>
+                          {ex.explanation && (
+                            <p className="mt-2 pt-2 border-t border-muted-foreground/10">
+                              <span className="text-muted-foreground">Explanation: </span>
+                              {ex.explanation}
+                            </p>
+                          )}
                         </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground text-sm italic">No examples available</p>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="constraints" className="mt-4 focus-visible:outline-none">
+              <Card>
+                <CardContent className="pt-6">
+                  <ul className="list-disc list-inside space-y-2">
+                    {constraints.length > 0 ? (
+                      constraints.map((c: string, i: number) => (
+                        <li key={i} className="font-mono text-sm text-muted-foreground">
+                          {c}
+                        </li>
                       ))
                     ) : (
-                      <p className="text-muted-foreground">No test cases available</p>
+                      <p className="text-muted-foreground text-sm italic">No constraints specified</p>
                     )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-
-            {userNote && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Your Notes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm whitespace-pre-wrap">{userNote.content}</p>
+                  </ul>
                 </CardContent>
               </Card>
-            )}
-          </div>
+            </TabsContent>
+            <TabsContent value="testcases" className="mt-4 focus-visible:outline-none">
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  {testCases.length > 0 ? (
+                    testCases.map((tc: any, i: number) => (
+                      <div key={i} className="bg-muted p-4 rounded-lg font-mono text-sm border">
+                        <p className="font-semibold text-xs text-muted-foreground mb-2">Case {i + 1}</p>
+                        <p>
+                          <span className="text-muted-foreground">Input: </span>
+                          <span className="text-primary">{JSON.stringify(tc.input)}</span>
+                        </p>
+                        <p>
+                          <span className="text-muted-foreground">Output: </span>
+                          <span className="text-green-500">{JSON.stringify(tc.expected)}</span>
+                        </p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-muted-foreground text-sm italic">No test cases available</p>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
 
-          <div className="space-y-6">
+          {userNote && (
             <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Code Editor</CardTitle>
+              <CardHeader className="py-3">
+                <CardTitle className="text-sm font-medium">Your Notes</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="bg-muted p-4 rounded-lg font-mono text-sm min-h-[300px] whitespace-pre-wrap">
-                  {userProgress?.code || problem.starterCode || "// Write your code here"}
-                </div>
-                <div className="flex gap-2 mt-4">
-                  <Button className="flex-1">Run Code</Button>
-                  <Button variant="outline" className="flex-1">
-                    Submit
-                  </Button>
-                </div>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{userNote.content}</p>
               </CardContent>
             </Card>
+          )}
 
+          {problem.solution && (
             <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Actions</CardTitle>
+              <CardHeader className="py-3">
+                <CardTitle className="text-sm font-medium">Solution Preview</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
-                {userProgress?.status === "Solved" ? (
-                  <Button variant="outline" className="w-full" disabled>
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                    Already Solved
-                  </Button>
-                ) : (
-                  <Button variant="outline" className="w-full">
-                    Mark as Solved
-                  </Button>
-                )}
-                <Button variant="outline" className="w-full">
-                  <Bookmark className="h-4 w-4 mr-2" />
-                  {isBookmarked ? "Remove Bookmark" : "Add Bookmark"}
-                </Button>
+              <CardContent>
+                <pre className="bg-muted p-4 rounded-lg font-mono text-xs overflow-x-auto border">
+                  {problem.solution}
+                </pre>
               </CardContent>
             </Card>
+          )}
+        </div>
 
-            {problem.solution && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Solution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <pre className="bg-muted p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                    {problem.solution}
-                  </pre>
-                </CardContent>
-              </Card>
-            )}
+        <div className="flex flex-col gap-6">
+          <div className="flex-1 min-h-[500px]">
+            <CodeEditor 
+              problemId={problem.id}
+              initialCode={userProgress?.code || problem.starterCode || ""}
+            />
           </div>
+
+          <Card>
+            <CardHeader className="py-3">
+              <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ProblemActions 
+                problemId={problem.id}
+                isBookmarked={isBookmarked}
+                status={userProgress?.status || null}
+              />
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

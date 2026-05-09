@@ -1,14 +1,6 @@
 import Link from "next/link";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -19,8 +11,11 @@ import {
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { db } from "@/lib/db";
-import { Search, Filter, CheckCircle2, Circle, PlayCircle } from "lucide-react";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { CheckCircle2, Circle, PlayCircle } from "lucide-react";
 import { cn, getDifficultyColor } from "@/lib/utils";
+import { ProblemFilters } from "./problem-filters";
 
 export default async function ProblemsPage({
   searchParams,
@@ -29,14 +24,22 @@ export default async function ProblemsPage({
 }) {
   const params = await searchParams;
 
-  const difficulty = params.difficulty || "all";
-  const topic = params.topic || "all";
+  const difficulty = params.difficulty;
+  const topicSlug = params.topic;
   const search = params.search || "";
 
   const whereClause: any = {};
 
   if (difficulty && difficulty !== "all") {
     whereClause.difficulty = difficulty;
+  }
+
+  if (topicSlug && topicSlug !== "all") {
+    whereClause.topics = {
+      some: {
+        slug: topicSlug,
+      },
+    };
   }
 
   if (search) {
@@ -58,9 +61,21 @@ export default async function ProblemsPage({
 
   const topics = await db.topic.findMany({
     orderBy: { name: "asc" },
+    select: { id: true, name: true, slug: true },
   });
 
+  const session = await getServerSession(authOptions);
   const userProgress: Record<string, string> = {};
+
+  if (session?.user?.id) {
+    const progress = await db.userProgress.findMany({
+      where: { userId: session.user.id },
+      select: { problemId: true, status: true },
+    });
+    progress.forEach((p) => {
+      userProgress[p.problemId] = p.status;
+    });
+  }
 
   return (
     <div className="container py-8">
@@ -72,40 +87,7 @@ export default async function ProblemsPage({
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search problems..."
-              className="pl-10"
-              defaultValue={search}
-            />
-          </div>
-          <Select defaultValue={difficulty}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Difficulty" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Difficulties</SelectItem>
-              <SelectItem value="Easy">Easy</SelectItem>
-              <SelectItem value="Medium">Medium</SelectItem>
-              <SelectItem value="Hard">Hard</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select defaultValue={topic}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Topic" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Topics</SelectItem>
-              {topics.map((t) => (
-                <SelectItem key={t.id} value={t.slug}>
-                  {t.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <ProblemFilters topics={topics} />
 
         <Card>
           <Table>

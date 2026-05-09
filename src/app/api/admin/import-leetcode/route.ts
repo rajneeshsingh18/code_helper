@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import * as XLSX from "xlsx";
 
 function slugify(text: string): string {
   return text
@@ -16,17 +17,21 @@ function parseDifficulty(diff: string): "Easy" | "Medium" | "Hard" {
   return "Medium";
 }
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
-    const XLSX = require("xlsx");
     const workbook = XLSX.readFile("src/components/sheets/leetcode.xlsx", { raw: true, defval: "" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+    const data = XLSX.utils.sheet_to_json<any>(sheet, { defval: "" });
 
     const headerRow = data.find((r: any) => r["__EMPTY"] === "Problem Name");
+    if (!headerRow) {
+      return NextResponse.json({ error: "Invalid spreadsheet format" }, { status: 400 });
+    }
+    
     const dataRows = data.slice(data.indexOf(headerRow) + 1).filter((r: any) => r["__EMPTY"]);
 
     console.log(`Found ${dataRows.length} problems to import`);
+...
 
     const allTopics = new Set<string>();
     const allPatterns = new Set<string>();
