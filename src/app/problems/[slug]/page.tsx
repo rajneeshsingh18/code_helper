@@ -52,8 +52,26 @@ export default async function ProblemPage({
   
   const relatedProblems = [...(problem.relatedTo || []), ...(problem.relatedFrom || [])];
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": problem.title,
+    "operatingSystem": "Web",
+    "applicationCategory": "EducationalApplication",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "description": `An algorithmic practice problem titled ${problem.title} with a difficulty of ${problem.difficulty}.`,
+  };
+
   return (
     <div className="h-[calc(100vh-3.5rem)] bg-[#0A0A0A] flex flex-col text-foreground overflow-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* IDE Top Bar */}
       <div className="h-12 shrink-0 border-b border-white/5 bg-[#111111] flex items-center px-4 justify-between">
         <div className="flex items-center gap-3">

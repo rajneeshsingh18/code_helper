@@ -8,6 +8,28 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, CheckCircle2, Circle, PlayCircle, Trophy, BookOpen } from "lucide-react";
 import { cn, getDifficultyColor } from "@/lib/utils";
+import { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const sheet = await db.topicSheet.findUnique({ where: { slug } });
+
+  if (!sheet) return { title: "Roadmap Not Found" };
+
+  const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
+
+  return {
+    title: `${sheet.name} Roadmap`,
+    description: sheet.description || `Master technical interviews with the ${sheet.name} curated problem list.`,
+    alternates: {
+      canonical: `${baseUrl}/sheets/${slug}`,
+    },
+  };
+}
 
 export default async function SheetDetailPage({
   params,

@@ -37,17 +37,19 @@ graph LR
 - **Infinite Scroll Problem Archive:** Scalable list handling 3.6k+ problems using cursor-based pagination.
 - **Real-time Filtering:** Search and filter by difficulty or topic using Next.js URL state.
 - **Topic Sheets:** Curated roadmaps for structured interview preparation.
-- **Service Layer Architecture:** Centralized business logic with aggressive caching.
+- **Service Layer Architecture:** Centralized business logic with aggressive caching using `unstable_cache`.
+
+### 🔍 SEO & Visibility
+- **Dynamic Sitemap:** Automated generation of `sitemap.xml` for all dynamic challenges and roadmaps.
+- **Hierarchical Metadata:** Semantic `<title>` and `description` generation for every problem.
+- **Dynamic OpenGraph:** High-fidelity sharing cards generated at the edge for every algorithmic challenge.
+- **Structured Data:** JSON-LD injection (SoftwareApplication, ItemList) for rich search results.
 
 ### 👤 User Features
-- **"Command Center" Dashboard:** A visually striking dashboard with live telemetry-style stats.
+- **"Command Center" Dashboard:** A visually striking dashboard with live telemetry-style stats and progress tracking.
 - **"The Ultimate IDE" Workspace:** A full-screen, premium workspace for deep focus and algorithmic mastery.
 - **Progress Tracking:** Automatically track solved, attempted, and bookmarked problems.
 - **Personal Notes:** Save private notes and complexity analysis directly within the problem workspace.
-
-### 🛠 Administrative Tools
-- **Bulk Import:** Seamlessly import thousands of problems via XLSX/CSV.
-- **Role-based Access:** Dedicated admin panel for data management.
 
 ---
 
@@ -60,6 +62,7 @@ graph LR
 | **Database** | Neon DB (Serverless PostgreSQL) |
 | **ORM** | Prisma 6 |
 | **State** | Zustand (Client) + Server Actions (Server) |
+| **Auth** | NextAuth.js v4 |
 | **Editor** | Monaco Editor (@monaco-editor/react) |
 
 ---
@@ -71,7 +74,7 @@ leetcode/
 ├── prisma/                 # Database schema & migrations
 ├── scripts/                # Data import and seeding scripts
 └── src/
-    ├── app/                # Next.js App Router (Pages & API)
+    ├── app/                # Next.js App Router (Pages, API, SEO)
     ├── components/         # Reusable UI & Logic components
     │   ├── layout/         # Navbar, Footer
     │   ├── problems/       # Monaco Editor, Actions, Notes
@@ -101,6 +104,18 @@ GOOGLE_CLIENT_ID="your-id"
 GOOGLE_CLIENT_SECRET="your-secret"
 ```
 
+### 3. Installation
+```bash
+npm install
+npx prisma generate
+npx prisma db push
+```
+
+### 4. Start Development
+```bash
+npm run dev
+```
+
 ---
 
 ## 📈 Development Roadmap
@@ -111,6 +126,7 @@ GOOGLE_CLIENT_SECRET="your-secret"
 - [x] Implement Service Layer & Caching
 - [x] Implement Cursor-Based Pagination & Infinite Scroll
 - [x] Global UI Redesign (Cyber-Editorial Aesthetic)
+- [x] Scalable SEO Architecture (Dynamic Metadata, Sitemaps, OG)
 - [ ] Add real-time code execution (Judge0 Integration)
 - [ ] Implement LeetCode-style "Run Tests" functionality
 

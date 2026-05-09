@@ -98,6 +98,18 @@ export function Navbar() {
                   </div>
                 </Link>
               )}
+              {session && (
+                <button 
+                  onClick={() => {
+                    setMobileOpen(false);
+                    signOut({ callbackUrl: "/" });
+                  }}
+                  className="flex items-center gap-2 text-red-500 mt-4 pt-4 border-t border-white/5"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Log out
+                </button>
+              )}
             </nav>
           </SheetContent>
         </Sheet>
@@ -144,7 +156,7 @@ export function Navbar() {
                       <span>Dashboard</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => signOut()}>
+                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>
                   </DropdownMenuItem>
