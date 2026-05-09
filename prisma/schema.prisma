@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Difficulty {
+  Easy
+  Medium
+  Hard
+}
+
+enum ProgressStatus {
+  Todo
+  Attempted
+  Solved
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String?
+  email         String         @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          String         @default("user")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  accounts      Account[]
+  sessions      Session[]
+  progress      UserProgress[]
+  notes         UserNote[]
+  bookmarks     Bookmark[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Topic {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  problems  Problem[] @relation("ProblemTopics")
+  createdAt DateTime  @default(now())
+}
+
+model TopicSheet {
+  id          String              @id @default(cuid())
+  name        String
+  slug        String              @unique
+  description String?
+  problems    TopicSheetProblem[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model Problem {
+  id           String         @id @default(cuid())
+  title        String
+  slug         String         @unique
+  difficulty   Difficulty
+  description  String         @db.Text
+  examples     String         @db.Text
+  constraints  String         @db.Text
+  testCases    String         @db.Text
+  starterCode  String         @db.Text
+  solution     String         @db.Text
+  videoUrl     String?
+  topics       Topic[]        @relation("ProblemTopics")
+  companies    String[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  sheetItems   TopicSheetProblem[]
+  progress     UserProgress[]
+  notes        UserNote[]
+  bookmarks    Bookmark[]
+}
+
+model TopicSheetProblem {
+  id          String     @id @default(cuid())
+  topicSheet  TopicSheet @relation(fields: [topicSheetId], references: [id], onDelete: Cascade)
+  topicSheetId String
+  problem     Problem    @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  problemId   String
+  order       Int        @default(0)
+
+  @@unique([topicSheetId, problemId])
+}
+
+model UserProgress {
+  id          String        @id @default(cuid())
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  problem     Problem       @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  problemId   String
+  status      ProgressStatus @default(Todo)
+  code        String?       @db.Text
+  lastAttempt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([userId, problemId])
+}
+
+model UserNote {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  problemId String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, problemId])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  problemId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, problemId])
+}
