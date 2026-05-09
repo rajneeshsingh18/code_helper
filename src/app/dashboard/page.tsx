@@ -29,7 +29,7 @@ export default async function DashboardPage() {
       <div className="absolute top-0 left-0 w-full h-[50vh] bg-gradient-to-b from-primary/10 via-background to-background pointer-events-none opacity-50" />
       <div className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vh] bg-primary/20 blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="container relative z-10 py-12 lg:py-20 space-y-12">
+      <div className="container mx-auto relative z-10 py-12 lg:py-20 space-y-12">
         {/* Header Section */}
         <div className="flex flex-col gap-4 border-l-4 border-primary pl-6">
           <Badge className="w-fit text-[10px] tracking-widest uppercase bg-primary/20 text-primary border-none">Command Center</Badge>

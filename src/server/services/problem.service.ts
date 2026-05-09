@@ -4,7 +4,7 @@ import { unstable_cache } from "next/cache";
 import { Prisma } from "@prisma/client";
 
 export const getProblems = unstable_cache(
-  async (difficulty?: string, topicSlug?: string, search?: string) => {
+  async (difficulty?: string, topicSlug?: string, search?: string, limit: number = 50, cursor?: string) => {
     const whereClause: Prisma.ProblemWhereInput = {};
 
     if (difficulty && difficulty !== "all") {
@@ -28,6 +28,8 @@ export const getProblems = unstable_cache(
 
     return db.problem.findMany({
       where: whereClause,
+      take: limit,
+      ...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
       include: {
         topics: true,
       },

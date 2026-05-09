@@ -34,19 +34,20 @@ graph LR
 
 ### 💻 Developer Experience
 - **Monaco Editor Integration:** A professional-grade coding environment with JavaScript support and theme synchronization.
-- **Real-time Filtering:** Search and filter problems by difficulty or topic using Next.js URL state management.
-- **Topic Sheets:** Curated collections of problems (Blind 75, Top 150) to provide a structured learning path.
-- **Service Layer Architecture:** Centralized business logic with aggressive caching using `unstable_cache`.
+- **Infinite Scroll Problem Archive:** Scalable list handling 3.6k+ problems using cursor-based pagination.
+- **Real-time Filtering:** Search and filter by difficulty or topic using Next.js URL state.
+- **Topic Sheets:** Curated roadmaps for structured interview preparation.
+- **Service Layer Architecture:** Centralized business logic with aggressive caching.
 
 ### 👤 User Features
-- **"Command Center" Dashboard:** A visually striking dashboard with live telemetry-style stats and progress tracking.
+- **"Command Center" Dashboard:** A visually striking dashboard with live telemetry-style stats.
+- **"The Ultimate IDE" Workspace:** A full-screen, premium workspace for deep focus and algorithmic mastery.
 - **Progress Tracking:** Automatically track solved, attempted, and bookmarked problems.
 - **Personal Notes:** Save private notes and complexity analysis directly within the problem workspace.
-- **Dark Mode:** Fully responsive, neon-themed dark mode using Tailwind CSS 4.
 
 ### 🛠 Administrative Tools
-- **Bulk Import:** Seamlessly import thousands of problems from LeetCode datasets via XLSX/CSV scripts and UI.
-- **Role-based Access:** Dedicated admin panel for data management (Secured via NextAuth).
+- **Bulk Import:** Seamlessly import thousands of problems via XLSX/CSV.
+- **Role-based Access:** Dedicated admin panel for data management.
 
 ---
 
@@ -59,7 +60,6 @@ graph LR
 | **Database** | Neon DB (Serverless PostgreSQL) |
 | **ORM** | Prisma 6 |
 | **State** | Zustand (Client) + Server Actions (Server) |
-| **Auth** | NextAuth.js v4 |
 | **Editor** | Monaco Editor (@monaco-editor/react) |
 
 ---
@@ -101,24 +101,6 @@ GOOGLE_CLIENT_ID="your-id"
 GOOGLE_CLIENT_SECRET="your-secret"
 ```
 
-### 3. Installation
-```bash
-npm install
-npx prisma generate
-npx prisma db push
-```
-
-### 4. Import Initial Data
-```bash
-# Import the first set of problems and sheets
-npm run db:seed
-```
-
-### 5. Start Development
-```bash
-npm run dev
-```
-
 ---
 
 ## 📈 Development Roadmap
@@ -127,8 +109,9 @@ npm run dev
 - [x] Implement Server Actions for progress tracking
 - [x] Build Dynamic Dashboard (Command Center)
 - [x] Implement Service Layer & Caching
+- [x] Implement Cursor-Based Pagination & Infinite Scroll
+- [x] Global UI Redesign (Cyber-Editorial Aesthetic)
 - [ ] Add real-time code execution (Judge0 Integration)
-- [ ] Implement Cursor-Based Pagination
 - [ ] Implement LeetCode-style "Run Tests" functionality
 
 ---

@@ -1,22 +1,11 @@
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Card } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { CheckCircle2, Circle, PlayCircle } from "lucide-react";
-import { cn, getDifficultyColor } from "@/lib/utils";
 import { ProblemFilters } from "./problem-filters";
 import { getProblems, getTopics } from "@/server/services/problem.service";
+import { ProblemTable } from "./problem-table";
+import { Code2, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export default async function ProblemsPage({
   searchParams,
@@ -29,11 +18,11 @@ export default async function ProblemsPage({
   const topicSlug = params.topic;
   const search = params.search || "";
 
-  const problems = await getProblems(difficulty, topicSlug, search);
+  // Fetch initial batch of 50 problems
+  const initialProblems = await getProblems(difficulty, topicSlug, search, 50);
   const topics = await getTopics();
 
   const session = await getServerSession(authOptions);
-
   const userProgress: Record<string, string> = {};
 
   if (session?.user?.id) {
@@ -47,98 +36,54 @@ export default async function ProblemsPage({
   }
 
   return (
-    <div className="container py-8">
-      <div className="flex flex-col gap-6">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold">Problems</h1>
-          <p className="text-muted-foreground">
-            Practice coding problems organized by difficulty and topics
-          </p>
+    <div className="min-h-screen bg-background relative">
+      {/* Ambient background decorative elements */}
+      <div className="absolute top-0 right-0 w-[30vw] h-[30vh] bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
+
+      <div className="container mx-auto relative z-10 py-12 lg:py-16 space-y-10">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-10">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="bg-primary/20 p-2 rounded-lg">
+                <Code2 className="h-5 w-5 text-primary" />
+              </div>
+              <Badge variant="outline" className="text-[10px] tracking-widest uppercase border-primary/30 text-primary">Library</Badge>
+            </div>
+            <h1 className="text-4xl lg:text-5xl font-black tracking-tighter">
+              Problem <span className="text-muted-foreground">Archive</span>
+            </h1>
+            <p className="text-muted-foreground max-w-[500px]">
+              Master algorithmic patterns through curated challenges. Filter by topic or difficulty to start your session.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4 bg-card/30 backdrop-blur-sm p-2 rounded-xl border border-white/5 shadow-2xl">
+            <div className="px-4 py-2 text-center border-r border-white/5">
+              <div className="text-2xl font-black">{initialProblems.length}</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Loaded</div>
+            </div>
+            <div className="px-4 py-2 text-center">
+              <div className="text-2xl font-black text-primary flex items-center gap-1">
+                <Sparkles className="h-4 w-4" />
+                3.6k+
+              </div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Total</div>
+            </div>
+          </div>
         </div>
 
-        <ProblemFilters topics={topics} />
+        <div className="space-y-6">
+          <div className="bg-card/50 backdrop-blur-md p-4 rounded-2xl border border-white/5 shadow-xl">
+            <ProblemFilters topics={topics} />
+          </div>
 
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[50px]">Status</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Difficulty</TableHead>
-                <TableHead>Topics</TableHead>
-                <TableHead className="w-[100px]">Video</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {problems.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                    No problems found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                problems.map((problem) => {
-                  const status = userProgress[problem.id];
-                  return (
-                    <TableRow key={problem.id}>
-                      <TableCell>
-                        {status === "Solved" ? (
-                          <CheckCircle2 className="h-5 w-5 text-green-500" />
-                        ) : status === "Attempted" ? (
-                          <PlayCircle className="h-5 w-5 text-yellow-500" />
-                        ) : (
-                          <Circle className="h-5 w-5 text-muted-foreground" />
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Link
-                          href={`/problems/${problem.slug}`}
-                          className="font-medium hover:text-primary transition-colors"
-                        >
-                          {problem.title}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={cn(getDifficultyColor(problem.difficulty))}>
-                          {problem.difficulty}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {problem.topics.slice(0, 2).map((t) => (
-                            <Badge key={t.id} variant="outline" className="text-xs">
-                              {t.name}
-                            </Badge>
-                          ))}
-                          {problem.topics.length > 2 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{problem.topics.length - 2}
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {problem.videoUrl ? (
-                          <Button variant="ghost" size="sm" asChild>
-                            <a
-                              href={problem.videoUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <PlayCircle className="h-4 w-4" />
-                            </a>
-                          </Button>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">-</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </Card>
+          <ProblemTable 
+            initialProblems={initialProblems} 
+            userProgress={userProgress} 
+            filters={{ difficulty, topic: topicSlug, search }}
+          />
+        </div>
       </div>
     </div>
   );
