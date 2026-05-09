@@ -76,6 +76,8 @@ model Topic {
   slug      String    @unique
   problems  Problem[] @relation("ProblemTopics")
   createdAt DateTime  @default(now())
+
+  @@index([slug])
 }
 
 model TopicSheet {
@@ -86,6 +88,8 @@ model TopicSheet {
   problems    TopicSheetProblem[]
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
+
+  @@index([slug])
 }
 
 model Problem {
@@ -100,14 +104,21 @@ model Problem {
   starterCode  String         @db.Text
   solution     String         @db.Text
   videoUrl     String?
+  timeComplexity String?
+  spaceComplexity String?
   topics       Topic[]        @relation("ProblemTopics")
   companies    String[]
+  relatedTo    Problem[]      @relation("RelatedProblems")
+  relatedFrom  Problem[]      @relation("RelatedProblems")
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   sheetItems   TopicSheetProblem[]
   progress     UserProgress[]
   notes        UserNote[]
   bookmarks    Bookmark[]
+
+  @@index([difficulty])
+  @@index([slug])
 }
 
 model TopicSheetProblem {

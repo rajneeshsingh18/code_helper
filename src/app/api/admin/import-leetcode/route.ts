@@ -31,7 +31,6 @@ export async function POST() {
     const dataRows = data.slice(data.indexOf(headerRow) + 1).filter((r: any) => r["__EMPTY"]);
 
     console.log(`Found ${dataRows.length} problems to import`);
-...
 
     const allTopics = new Set<string>();
     const allPatterns = new Set<string>();

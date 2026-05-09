@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn, getDifficultyColor } from "@/lib/utils";
-import { ChevronLeft, PlayCircle, Bookmark, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, PlayCircle, Bookmark, CheckCircle2, Clock, Cpu, ExternalLink } from "lucide-react";
 import { CodeEditor } from "@/components/problems/code-editor";
 import { ProblemActions } from "@/components/problems/problem-actions";
+import { ProblemNotes } from "@/components/problems/problem-notes";
+import { getProblemBySlug } from "@/server/services/problem.service";
 
 export default async function ProblemPage({
   params,
@@ -19,12 +21,7 @@ export default async function ProblemPage({
 }) {
   const { slug } = await params;
 
-  const problem = await db.problem.findUnique({
-    where: { slug },
-    include: {
-      topics: true,
-    },
-  });
+  const problem = await getProblemBySlug(slug);
 
   if (!problem) {
     notFound();
@@ -53,13 +50,15 @@ export default async function ProblemPage({
   const examples = problem.examples ? JSON.parse(problem.examples) : [];
   const constraints = problem.constraints ? JSON.parse(problem.constraints) : [];
   const testCases = problem.testCases ? JSON.parse(problem.testCases) : [];
+  
+  const relatedProblems = [...(problem.relatedTo || []), ...(problem.relatedFrom || [])];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="border-b bg-card">
+      <div className="border-b bg-card shadow-sm">
         <div className="container py-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" asChild>
+            <Button variant="ghost" size="icon" asChild className="shrink-0">
               <Link href="/problems">
                 <ChevronLeft className="h-5 w-5" />
               </Link>
@@ -76,6 +75,11 @@ export default async function ProblemPage({
                 {problem.topics.map((topic) => (
                   <Badge key={topic.id} variant="outline" className="text-[10px] h-5">
                     {topic.name}
+                  </Badge>
+                ))}
+                {problem.companies.map((company) => (
+                  <Badge key={company} variant="secondary" className="text-[10px] h-5 bg-blue-500/10 text-blue-500 border-blue-500/20">
+                    {company}
                   </Badge>
                 ))}
               </div>
@@ -105,8 +109,8 @@ export default async function ProblemPage({
           <Tabs defaultValue="description" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="examples">Examples</TabsTrigger>
-              <TabsTrigger value="constraints">Constraints</TabsTrigger>
+              <TabsTrigger value="complexity">Complexity</TabsTrigger>
+              <TabsTrigger value="related">Related</TabsTrigger>
               <TabsTrigger value="testcases">Test Cases</TabsTrigger>
             </TabsList>
             <TabsContent value="description" className="mt-4 focus-visible:outline-none">
@@ -116,57 +120,89 @@ export default async function ProblemPage({
                     className="space-y-4"
                     dangerouslySetInnerHTML={{ __html: problem.description }} 
                   />
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="examples" className="mt-4 focus-visible:outline-none">
-              <Card>
-                <CardContent className="pt-6 space-y-6">
-                  {examples.length > 0 ? (
-                    examples.map((ex: any, i: number) => (
-                      <div key={i} className="space-y-2">
-                        <p className="font-semibold text-sm">Example {i + 1}:</p>
-                        <div className="bg-muted p-4 rounded-lg font-mono text-sm border">
-                          <p>
-                            <span className="text-muted-foreground">Input: </span>
-                            {ex.input}
-                          </p>
-                          <p>
-                            <span className="text-muted-foreground">Output: </span>
-                            {ex.output}
-                          </p>
-                          {ex.explanation && (
-                            <p className="mt-2 pt-2 border-t border-muted-foreground/10">
-                              <span className="text-muted-foreground">Explanation: </span>
-                              {ex.explanation}
-                            </p>
-                          )}
-                        </div>
+                  
+                  <div className="mt-8 space-y-6">
+                    {examples.length > 0 && (
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-semibold">Examples:</h3>
+                        {examples.map((ex: any, i: number) => (
+                          <div key={i} className="bg-muted p-4 rounded-lg font-mono text-sm border">
+                            <p><span className="text-muted-foreground">Input: </span>{ex.input}</p>
+                            <p><span className="text-muted-foreground">Output: </span>{ex.output}</p>
+                            {ex.explanation && <p className="mt-2 text-xs"><span className="text-muted-foreground">Explanation: </span>{ex.explanation}</p>}
+                          </div>
+                        ))}
                       </div>
-                    ))
-                  ) : (
-                    <p className="text-muted-foreground text-sm italic">No examples available</p>
-                  )}
+                    )}
+                    
+                    {constraints.length > 0 && (
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-semibold">Constraints:</h3>
+                        <ul className="list-disc list-inside space-y-1">
+                          {constraints.map((c: string, i: number) => (
+                            <li key={i} className="font-mono text-xs text-muted-foreground">{c}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
-            <TabsContent value="constraints" className="mt-4 focus-visible:outline-none">
+            
+            <TabsContent value="complexity" className="mt-4 focus-visible:outline-none">
               <Card>
-                <CardContent className="pt-6">
-                  <ul className="list-disc list-inside space-y-2">
-                    {constraints.length > 0 ? (
-                      constraints.map((c: string, i: number) => (
-                        <li key={i} className="font-mono text-sm text-muted-foreground">
-                          {c}
-                        </li>
+                <CardHeader>
+                  <CardTitle className="text-sm">Algorithm Analysis</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-4 p-4 bg-muted rounded-lg border">
+                    <Clock className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase font-semibold">Time Complexity</p>
+                      <p className="font-mono">{problem.timeComplexity || "O(N)"}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 bg-muted rounded-lg border">
+                    <Cpu className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase font-semibold">Space Complexity</p>
+                      <p className="font-mono">{problem.spaceComplexity || "O(1)"}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="related" className="mt-4 focus-visible:outline-none">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Similar Problems</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {relatedProblems.length > 0 ? (
+                      relatedProblems.map((rp: any) => (
+                        <Link 
+                          key={rp.id} 
+                          href={`/problems/${rp.slug}`}
+                          className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors border group"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-sm font-medium group-hover:text-primary">{rp.title}</span>
+                            <Badge variant="outline" className="text-[10px]">{rp.difficulty}</Badge>
+                          </div>
+                          <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                        </Link>
                       ))
                     ) : (
-                      <p className="text-muted-foreground text-sm italic">No constraints specified</p>
+                      <p className="text-sm text-muted-foreground italic text-center py-4">No related problems found.</p>
                     )}
-                  </ul>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
+            
             <TabsContent value="testcases" className="mt-4 focus-visible:outline-none">
               <Card>
                 <CardContent className="pt-6 space-y-4">
@@ -192,16 +228,10 @@ export default async function ProblemPage({
             </TabsContent>
           </Tabs>
 
-          {userNote && (
-            <Card>
-              <CardHeader className="py-3">
-                <CardTitle className="text-sm font-medium">Your Notes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">{userNote.content}</p>
-              </CardContent>
-            </Card>
-          )}
+          <ProblemNotes 
+            problemId={problem.id}
+            initialContent={userNote?.content || ""}
+          />
 
           {problem.solution && (
             <Card>

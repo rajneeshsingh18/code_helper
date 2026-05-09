@@ -16,6 +16,7 @@ import { authOptions } from "@/lib/auth";
 import { CheckCircle2, Circle, PlayCircle } from "lucide-react";
 import { cn, getDifficultyColor } from "@/lib/utils";
 import { ProblemFilters } from "./problem-filters";
+import { getProblems, getTopics } from "@/server/services/problem.service";
 
 export default async function ProblemsPage({
   searchParams,
@@ -28,43 +29,11 @@ export default async function ProblemsPage({
   const topicSlug = params.topic;
   const search = params.search || "";
 
-  const whereClause: any = {};
-
-  if (difficulty && difficulty !== "all") {
-    whereClause.difficulty = difficulty;
-  }
-
-  if (topicSlug && topicSlug !== "all") {
-    whereClause.topics = {
-      some: {
-        slug: topicSlug,
-      },
-    };
-  }
-
-  if (search) {
-    whereClause.title = {
-      contains: search,
-      mode: "insensitive",
-    };
-  }
-
-  const problems = await db.problem.findMany({
-    where: whereClause,
-    include: {
-      topics: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  const topics = await db.topic.findMany({
-    orderBy: { name: "asc" },
-    select: { id: true, name: true, slug: true },
-  });
+  const problems = await getProblems(difficulty, topicSlug, search);
+  const topics = await getTopics();
 
   const session = await getServerSession(authOptions);
+
   const userProgress: Record<string, string> = {};
 
   if (session?.user?.id) {

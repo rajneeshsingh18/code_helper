@@ -15,6 +15,8 @@ export async function POST(req: Request) {
       starterCode,
       solution,
       videoUrl,
+      timeComplexity,
+      spaceComplexity,
       topics,
       companies,
     } = body;
@@ -64,6 +66,8 @@ export async function POST(req: Request) {
         starterCode: starterCode || "",
         solution: solution || "",
         videoUrl: videoUrl || null,
+        timeComplexity: timeComplexity || null,
+        spaceComplexity: spaceComplexity || null,
         companies: companies || [],
         topics: {
           connect: topicConnections.map((t) => t.connect),

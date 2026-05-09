@@ -1,10 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import Editor from "@monaco-editor/react";
+import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { Play, Send, RotateCcw } from "lucide-react";
+import { Play, Send, RotateCcw, Loader2 } from "lucide-react";
+
+const Editor = dynamic(() => import("@monaco-editor/react"), { 
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-full w-full bg-muted/10 min-h-[400px]">
+      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    </div>
+  )
+});
 
 interface CodeEditorProps {
   initialCode: string;

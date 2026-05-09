@@ -36,10 +36,12 @@ graph LR
 - **Monaco Editor Integration:** A professional-grade coding environment with JavaScript support and theme synchronization.
 - **Real-time Filtering:** Search and filter problems by difficulty or topic using Next.js URL state management.
 - **Topic Sheets:** Curated collections of problems (Blind 75, Top 150) to provide a structured learning path.
+- **Service Layer Architecture:** Centralized business logic with aggressive caching using `unstable_cache`.
 
 ### 👤 User Features
+- **"Command Center" Dashboard:** A visually striking dashboard with live telemetry-style stats and progress tracking.
 - **Progress Tracking:** Automatically track solved, attempted, and bookmarked problems.
-- **Dynamic Dashboard:** Visual statistics including difficulty breakdown and progress bars.
+- **Personal Notes:** Save private notes and complexity analysis directly within the problem workspace.
 - **Dark Mode:** Fully responsive, neon-themed dark mode using Tailwind CSS 4.
 
 ### 🛠 Administrative Tools
@@ -72,10 +74,12 @@ leetcode/
     ├── app/                # Next.js App Router (Pages & API)
     ├── components/         # Reusable UI & Logic components
     │   ├── layout/         # Navbar, Footer
-    │   ├── problems/       # Monaco Editor, Actions
+    │   ├── problems/       # Monaco Editor, Actions, Notes
     │   └── ui/             # Shadcn/UI primitives
     ├── lib/                # Shared utilities (Auth, Prisma)
-    ├── server/             # Server-only logic (Actions)
+    ├── server/             
+    │   ├── actions/        # Server Actions (Mutations)
+    │   └── services/       # Service Layer (Queries & Logic)
     └── store/              # Zustand state management
 ```
 
@@ -121,10 +125,11 @@ npm run dev
 - [x] Consolidate `src/app` architecture
 - [x] Integrate Monaco Code Editor
 - [x] Implement Server Actions for progress tracking
-- [x] Build Dynamic Dashboard
+- [x] Build Dynamic Dashboard (Command Center)
+- [x] Implement Service Layer & Caching
 - [ ] Add real-time code execution (Judge0 Integration)
+- [ ] Implement Cursor-Based Pagination
 - [ ] Implement LeetCode-style "Run Tests" functionality
-- [ ] Add Social features (Share progress, streaks)
 
 ---
 

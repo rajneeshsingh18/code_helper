@@ -265,6 +265,8 @@ export default function AdminPage() {
                 ["starterCode", "No", "Starting code for the editor"],
                 ["solution", "No", "Solution code"],
                 ["videoUrl", "No", "Link to video solution"],
+                ["timeComplexity", "No", "Time complexity (e.g., O(n))"],
+                ["spaceComplexity", "No", "Space complexity (e.g., O(1))"],
                 ["topics", "No", "Comma-separated topic names"],
                 ["companies", "No", "Comma-separated company tags"],
               ].map(([col, req, desc]) => (

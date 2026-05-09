@@ -27,8 +27,12 @@ export interface Problem {
   starterCode: string;
   solution: string;
   videoUrl?: string | null;
+  timeComplexity?: string | null;
+  spaceComplexity?: string | null;
   topics: Topic[];
   companies: string[];
+  relatedTo?: Problem[];
+  relatedFrom?: Problem[] | null;
   createdAt: Date;
   updatedAt: Date;
 }

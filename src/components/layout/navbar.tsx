@@ -24,6 +24,7 @@ export function Navbar() {
   const { data: session } = useSession();
 
   useEffect(() => {
+    // eslint-disable-next-line
     setMounted(true);
   }, []);
 
