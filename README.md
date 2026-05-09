@@ -95,7 +95,7 @@ leetcode/
 - Node.js 20+
 - A Neon DB (PostgreSQL) instance
 
-### 2. Environment Setup
+<!-- ### 2. Environment Setup
 Create a `.env` file in the root:
 ```env
 DATABASE_URL="postgresql://user:pass@host/dbname?sslmode=require"
@@ -105,11 +105,11 @@ GOOGLE_CLIENT_ID="your-id"
 GOOGLE_CLIENT_SECRET="your-secret"
 GITHUB_ID="your-id"
 GITHUB_SECRET="your-secret"
-```
+``` -->
 
 ---
 
-## 📈 Development Roadmap
+<!-- ## 📈 Development Roadmap
 - [x] Consolidate `src/app` architecture
 - [x] Integrate Monaco Code Editor
 - [x] Implement Server Actions for progress tracking
@@ -121,7 +121,7 @@ GITHUB_SECRET="your-secret"
 - [x] Advanced Activity Timeline (Mission History)
 - [x] Hardened Auth (Middleware & GitHub OAuth)
 - [ ] Add real-time code execution (Judge0 Integration)
-- [ ] Implement LeetCode-style "Run Tests" functionality
+- [ ] Implement LeetCode-style "Run Tests" functionality -->
 
 ---
 

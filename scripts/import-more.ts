@@ -26,11 +26,15 @@ interface SheetRow {
 async function importMore() {
   console.log("Importing more problems...");
 
-  const workbook = XLSX.readFile("src/components/sheets/leetcode.xlsx", { raw: true, defval: "" });
+  const workbook = XLSX.readFile("src/components/sheets/leetcode.xlsx", { raw: true });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
   const data = XLSX.utils.sheet_to_json<SheetRow>(sheet, { defval: "" });
 
   const headerRow = data.find((r) => r.__EMPTY === "Problem Name");
+  if (!headerRow) {
+    console.error("Header row not found");
+    return;
+  }
   const dataRows = data.slice(data.indexOf(headerRow) + 1).filter((r) => r.__EMPTY);
   
   const rowsToImport = dataRows.slice(100, 600);
@@ -74,8 +78,6 @@ async function importMore() {
   console.log(`Imported ${imported} more problems`);
 
   console.log("Creating topic sheets...");
-  
-  const topics = await prisma.topic.findMany();
   
   const easyProblems = await prisma.problem.findMany({ where: { difficulty: "Easy" }, take: 50 });
   const mediumProblems = await prisma.problem.findMany({ where: { difficulty: "Medium" }, take: 50 });

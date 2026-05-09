@@ -41,26 +41,32 @@ export function ProblemActions({ problemId, isBookmarked, status }: ProblemActio
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex items-center gap-3 w-full">
       <Button 
         variant="outline" 
         size="sm" 
-        className="flex-1"
+        className={cn(
+          "flex-1 h-10 font-bold uppercase tracking-wider text-[10px] border-white/10 transition-all",
+          isBookmarked ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" : "bg-white/5 hover:bg-white/10"
+        )}
         onClick={handleBookmark}
         disabled={isPending}
       >
-        <Bookmark className={isBookmarked ? "h-4 w-4 mr-2 fill-yellow-500 text-yellow-500" : "h-4 w-4 mr-2"} />
+        <Bookmark className={cn("h-3.5 w-3.5 mr-2", isBookmarked && "fill-yellow-500")} />
         {isBookmarked ? "Bookmarked" : "Bookmark"}
       </Button>
       <Button 
         variant="outline" 
         size="sm" 
-        className="flex-1"
+        className={cn(
+          "flex-1 h-10 font-bold uppercase tracking-wider text-[10px] border-white/10 transition-all",
+          status === "Solved" ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-white/5 hover:bg-white/10"
+        )}
         onClick={handleToggleSolved}
         disabled={isPending}
       >
-        <CheckCircle2 className={status === "Solved" ? "h-4 w-4 mr-2 text-green-500" : "h-4 w-4 mr-2"} />
-        {status === "Solved" ? "Solved" : "Mark as Solved"}
+        <CheckCircle2 className="h-3.5 w-3.5 mr-2" />
+        {status === "Solved" ? "Solved" : "Mark Solved"}
       </Button>
     </div>
   );
