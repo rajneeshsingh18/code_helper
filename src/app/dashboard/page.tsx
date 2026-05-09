@@ -6,7 +6,8 @@ import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, BookOpen, Target, Trophy, Flame, Code2, Sparkles, Layers } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getDashboardStats, getUserProgressStats } from "@/server/services/dashboard.service";
+import { getDashboardStats, getUserProgressStats, getRecentActivity } from "@/server/services/dashboard.service";
+import { ActivityTimeline } from "@/components/dashboard/activity-timeline";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -22,6 +23,9 @@ export default async function DashboardPage() {
   
   // User-specific stats
   const { totalSolved, easySolved, mediumSolved, hardSolved } = await getUserProgressStats(userId);
+
+  // User activity timeline
+  const activities = await getRecentActivity(userId);
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -177,6 +181,16 @@ export default async function DashboardPage() {
               </Link>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Activity Timeline Section */}
+        <div className="space-y-10 pb-20">
+          <div className="flex flex-col gap-4 border-l-4 border-primary pl-6">
+            <Badge className="w-fit text-[10px] tracking-widest uppercase bg-primary/20 text-primary border-none">Mission Log</Badge>
+            <h2 className="text-3xl lg:text-4xl font-black tracking-tight text-foreground">Mission History</h2>
+            <p className="text-muted-foreground max-w-[600px]">Your recent algorithmic activity and milestones recorded in real-time.</p>
+          </div>
+          <ActivityTimeline activities={activities} />
         </div>
       </div>
     </div>

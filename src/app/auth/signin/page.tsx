@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { FcGoogle } from "react-icons/fc";
+import { FaGithub } from "react-icons/fa";
 import { Code2, Loader2, ArrowRight } from "lucide-react";
 
 export default function SignInPage() {
@@ -43,8 +44,8 @@ export default function SignInPage() {
     }
   };
 
-  const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/dashboard" });
+  const handleSocialSignIn = (provider: "google" | "github") => {
+    signIn(provider, { callbackUrl: "/dashboard" });
   };
 
   return (
@@ -128,15 +129,26 @@ export default function SignInPage() {
               </div>
             </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-12 border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
-              onClick={handleGoogleSignIn}
-            >
-              <FcGoogle className="mr-2 h-5 w-5" />
-              Continue with Google
-            </Button>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-12 border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                onClick={() => handleSocialSignIn("google")}
+              >
+                <FcGoogle className="mr-2 h-5 w-5" />
+                Google
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-12 border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                onClick={() => handleSocialSignIn("github")}
+              >
+                <FaGithub className="mr-2 h-5 w-5" />
+                GitHub
+              </Button>
+            </div>
           </CardContent>
           
           <CardFooter className="justify-center bg-black/20 border-t border-white/5 py-4">

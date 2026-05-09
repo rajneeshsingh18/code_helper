@@ -1,6 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { db } from "@/lib/db";
 import bcrypt from "bcryptjs";
@@ -9,11 +10,16 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(db),
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
+    }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_ID ?? "",
+      clientSecret: process.env.GITHUB_SECRET ?? "",
     }),
     CredentialsProvider({
       name: "credentials",
@@ -23,7 +29,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null;
+          throw new Error("Missing credentials");
         }
 
         const user = await db.user.findUnique({
@@ -31,13 +37,13 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user || !user.password) {
-          return null;
+          throw new Error("No user found with this email");
         }
 
         const isValid = await bcrypt.compare(credentials.password, user.password);
 
         if (!isValid) {
-          return null;
+          throw new Error("Invalid password");
         }
 
         return {
@@ -51,7 +57,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -68,5 +74,7 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/auth/signin",
+    error: "/auth/signin",
   },
+  debug: process.env.NODE_ENV === "development",
 };
