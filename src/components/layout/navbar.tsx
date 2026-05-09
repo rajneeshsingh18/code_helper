@@ -7,14 +7,6 @@ import { Menu, Code2, BookOpen, LayoutDashboard, User, Moon, Sun, LogOut } from 
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function Navbar() {
@@ -131,37 +123,23 @@ export function Navbar() {
             )}
 
             {session ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
+              <div className="flex items-center gap-4">
+                <Link href="/dashboard" className="hidden sm:flex items-center gap-2 transition-transform hover:scale-105">
+                   <Avatar className="h-8 w-8 border border-white/10 shadow-lg">
                       <AvatarImage src={session.user?.image || ""} alt={session.user?.name || ""} />
-                      <AvatarFallback>{session.user?.name?.[0] || "U"}</AvatarFallback>
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">{session.user?.name?.[0] || "U"}</AvatarFallback>
                     </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{session.user?.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        {session.user?.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/dashboard">
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      <span>Dashboard</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </Link>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="gap-2 border-white/10 hover:bg-red-500/10 hover:text-red-500 transition-all font-bold h-9"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="hidden md:inline">Sign Out</span>
+                </Button>
+              </div>
             ) : (
               <div className="flex items-center gap-2">
                 <Button variant="ghost" size="sm" asChild>

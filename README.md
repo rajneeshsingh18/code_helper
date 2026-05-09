@@ -46,7 +46,8 @@ graph LR
 - **Structured Data:** JSON-LD injection (SoftwareApplication, ItemList) for rich search results.
 
 ### 👤 User Features
-- **"Command Center" Dashboard:** A visually striking dashboard with live telemetry-style stats and progress tracking.
+- **"Command Center" Dashboard:** A visually striking dashboard with live telemetry-style stats and a chronological **Mission History** timeline.
+- **Unified Activity Tracking:** Merged history of solves, attempts, personal notes, and bookmarks.
 - **"The Ultimate IDE" Workspace:** A full-screen, premium workspace for deep focus and algorithmic mastery.
 - **Progress Tracking:** Automatically track solved, attempted, and bookmarked problems.
 - **Personal Notes:** Save private notes and complexity analysis directly within the problem workspace.
@@ -62,7 +63,7 @@ graph LR
 | **Database** | Neon DB (Serverless PostgreSQL) |
 | **ORM** | Prisma 6 |
 | **State** | Zustand (Client) + Server Actions (Server) |
-| **Auth** | NextAuth.js v4 |
+| **Auth** | NextAuth.js v4 (GitHub & Google OAuth) |
 | **Editor** | Monaco Editor (@monaco-editor/react) |
 
 ---
@@ -102,18 +103,8 @@ NEXTAUTH_SECRET="your-secret"
 NEXTAUTH_URL="http://localhost:3000"
 GOOGLE_CLIENT_ID="your-id"
 GOOGLE_CLIENT_SECRET="your-secret"
-```
-
-### 3. Installation
-```bash
-npm install
-npx prisma generate
-npx prisma db push
-```
-
-### 4. Start Development
-```bash
-npm run dev
+GITHUB_ID="your-id"
+GITHUB_SECRET="your-secret"
 ```
 
 ---
@@ -127,6 +118,8 @@ npm run dev
 - [x] Implement Cursor-Based Pagination & Infinite Scroll
 - [x] Global UI Redesign (Cyber-Editorial Aesthetic)
 - [x] Scalable SEO Architecture (Dynamic Metadata, Sitemaps, OG)
+- [x] Advanced Activity Timeline (Mission History)
+- [x] Hardened Auth (Middleware & GitHub OAuth)
 - [ ] Add real-time code execution (Judge0 Integration)
 - [ ] Implement LeetCode-style "Run Tests" functionality
 
